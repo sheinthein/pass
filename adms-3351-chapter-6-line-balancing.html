@@ -1,0 +1,922 @@
+<title>Harry's Midterm Toolkit · Balance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a lab notebook — each formula gets an "explain" column beside a live "try it" bench; blue marks whatever is critical (critical path, bottleneck, the answer). */
+:root{
+  --paper:#F4F6F2; --surface:#FFFFFF; --ink:#18212B; --muted:#5A6470; --line:#D8DDD4; --line-strong:#9AA39A;
+  --accent:#1D5FD1; --accent-soft:#E2EBFC; --steel:#2B7A78; --steel-soft:#DCEFEE; --alt:#6E46A3; --good:#2B7A4B; --bad:#B42318; --on-accent:#FFFFFF;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --f-body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11161B; --surface:#192028; --ink:#E5E9EC; --muted:#9BA5AF; --line:#2B343D; --line-strong:#56616B;
+  --accent:#6EA2FF; --accent-soft:#18284A; --steel:#5FBDB8; --steel-soft:#163634; --alt:#B697E6; --good:#5FC189; --bad:#FF8A80; --on-accent:#0B1530; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11161B; --surface:#192028; --ink:#E5E9EC; --muted:#9BA5AF; --line:#2B343D; --line-strong:#56616B;
+  --accent:#6EA2FF; --accent-soft:#18284A; --steel:#5FBDB8; --steel-soft:#163634; --alt:#B697E6; --good:#5FC189; --bad:#FF8A80; --on-accent:#0B1530; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:0 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+header.top{padding-block:40px 24px;display:grid;gap:14px}
+header.top h1{font-size:clamp(40px,7vw,76px);font-weight:800;letter-spacing:-.02em}
+header.top h1 span{color:var(--accent)}
+header.top .lede{max-width:62ch;color:var(--muted);font-size:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-mono);font-size:12.5px;border:1px solid var(--line-strong);border-radius:4px;padding:4px 9px;background:var(--surface)}
+.by{font-size:17px;color:var(--muted)} .by b{color:var(--ink)}
+.chip.hot{border-color:var(--accent);color:var(--accent)}
+
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line);margin-inline:-20px;padding-inline:20px}
+nav.toc .row{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:thin}
+nav.toc a{flex:none;text-decoration:none;color:var(--ink);font-size:14px;padding:5px 10px;border-radius:4px;border:1px solid transparent;white-space:nowrap}
+nav.toc a b{font-family:var(--f-mono);font-weight:600;color:var(--muted);font-size:12px;margin-right:4px}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--line-strong);outline:none}
+nav.toc a.ai{color:var(--accent)}
+
+section.lab{padding-block:44px;border-bottom:1px solid var(--line);scroll-margin-top:56px}
+section.lab[hidden]{display:none}
+.lab-head{display:grid;gap:6px;margin-bottom:22px}
+.lab-head h2{font-size:clamp(26px,3.6vw,36px);font-weight:800}
+.lab-head .q{color:var(--muted);max-width:68ch}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:28px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.explain{display:grid;gap:16px;min-width:0}
+.bench{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:grid;gap:16px;min-width:0}
+.bench>.eyebrow{margin-bottom:-6px}
+
+.eq{font-family:var(--f-mono);font-size:14.5px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--steel);padding:10px 12px;border-radius:4px;overflow-x:auto;white-space:nowrap}
+.eq .k{color:var(--steel);font-weight:600}
+.eqs{display:grid;gap:8px}
+.note{font-size:15px;max-width:62ch}
+.note b{font-weight:700}
+.trap{font-size:15px;border:1px dashed var(--accent);border-radius:4px;padding:10px 12px;background:var(--accent-soft)}
+.trap::before{content:"Exam trap";display:block;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:2px;font-weight:600}
+
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.field{display:grid;gap:3px;min-width:0}
+.field label{font-size:13px;color:var(--muted)}
+input[type=number],select,textarea{font:inherit;font-family:var(--f-mono);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line-strong);border-radius:4px;padding:6px 8px;width:100%;min-width:0}
+input[type=number]:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,input[type=range]:focus-visible,input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[readonly]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:4px;overflow:hidden;flex-wrap:wrap}
+.seg button{font:inherit;font-size:14px;background:var(--surface);color:var(--ink);border:0;padding:6px 12px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.btn{font:inherit;font-size:14px;background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);border-radius:4px;padding:6px 12px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.btn:hover{border-color:var(--ink)}
+
+.out{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.out div{background:var(--surface);padding:8px 10px;display:grid;gap:1px}
+.out span{font-size:12.5px;color:var(--muted)}
+.out strong{font-family:var(--f-mono);font-size:17px;font-variant-numeric:tabular-nums;font-weight:600}
+.out .hot{background:var(--accent-soft)}
+.out .hot strong{color:var(--accent)}
+.say{font-size:15px;border-left:3px solid var(--accent);padding-left:10px}
+.say.bad{border-color:var(--bad);color:var(--bad)}
+
+.viz{width:100%;overflow-x:auto}
+.viz svg{display:block;width:100%;height:auto;min-width:420px}
+svg text{font-family:var(--f-mono);font-size:12px;fill:var(--muted)}
+svg .t-ink{fill:var(--ink)} svg .t-acc{fill:var(--accent)} svg .t-steel{fill:var(--steel)} svg .t-alt{fill:var(--alt)} svg .t-b{font-weight:600}
+svg .ax{stroke:var(--line-strong);stroke-width:1;fill:none}
+svg .grid-l{stroke:var(--line);stroke-width:1;fill:none}
+svg .bar-steel{fill:var(--steel)} svg .bar-steel-soft{fill:var(--steel-soft);stroke:var(--steel)} svg .bar-acc{fill:var(--accent)} svg .bar-muted{fill:var(--line-strong)}
+svg .ln{fill:none;stroke-width:2.5}
+svg .ln-ink{stroke:var(--ink)} svg .ln-steel{stroke:var(--steel)} svg .ln-alt{stroke:var(--alt)} svg .ln-acc{stroke:var(--accent)} svg .ln-muted{stroke:var(--line-strong)}
+svg .dash{stroke-dasharray:5 4}
+svg .area-acc{fill:var(--accent);opacity:.22}
+svg .area-steel{fill:var(--steel);opacity:.16}
+svg .dot-acc{fill:var(--accent)} svg .dot-steel{fill:var(--steel)} svg .dot-alt{fill:var(--alt)} svg .dot-ink{fill:var(--ink)}
+svg .node{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5}
+svg .node.crit{stroke:var(--accent);stroke-width:2.5;fill:var(--accent-soft)}
+svg .edge{stroke:var(--line-strong);stroke-width:1.6;fill:none}
+svg .edge.crit{stroke:var(--accent);stroke-width:2.6}
+svg .arrow{fill:var(--line-strong)} svg .arrow.crit{fill:var(--accent)}
+svg .tri{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+svg .tri-hot{fill:var(--accent-soft);stroke:var(--accent)}
+svg .big{font-family:var(--f-display);font-size:30px;font-weight:800}
+
+table.t{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+table.t th,table.t td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+table.t th{font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+table.t td:first-child,table.t th:first-child{text-align:left}
+table.t tr.crit td{color:var(--accent);font-weight:600}
+table.t td.mono{font-family:var(--f-mono)}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:11.5px;padding:1px 7px;border-radius:999px;border:1px solid currentColor}
+.pill.go{color:var(--good)} .pill.stop{color:var(--bad)} .pill.tie{color:var(--muted)}
+
+.check{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:14px}
+.check label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+
+/* AI section */
+section.ai .anat{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:880px){section.ai .anat{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+.part{border-top:3px solid var(--c);padding-top:8px;display:grid;gap:4px}
+.part h3{font-size:17px;font-weight:600;color:var(--c)}
+.part p{font-size:14px;color:var(--muted)}
+.c-role{--c:var(--steel)} .c-src{--c:var(--alt)} .c-task{--c:var(--accent)} .c-fmt{--c:var(--good)} .c-rule{--c:var(--muted)}
+.prompt{display:grid;gap:8px;font-family:var(--f-mono);font-size:13.5px;line-height:1.55}
+.prompt .blk{border-left:3px solid var(--c);padding:4px 10px;background:var(--paper);white-space:pre-wrap;word-break:break-word}
+.prompt .blk small{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);font-weight:600}
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;counter-reset:r}
+.rules div{display:grid;gap:4px}
+.rules h3{font-size:18px;font-weight:600}
+.rules p{font-size:15px;color:var(--muted)}
+.quiz-panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:10px}
+.quiz-panel .lab-head p{margin:0}
+.quiz-launch{margin-top:6px}
+#quiz-actions[hidden]{display:none}
+.quiz-filters{display:flex;flex-wrap:wrap;gap:8px}
+.quiz-question{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:9px}
+.quiz-question h3{font-size:17px;line-height:1.35;font-weight:600}
+.quiz-options{display:grid;gap:7px}
+.quiz-option{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);background:var(--paper);border-radius:4px;padding:8px 10px;cursor:pointer}
+.quiz-option input{margin-top:5px;accent-color:var(--accent)}
+.quiz-feedback{font-size:14px;color:var(--muted);padding-left:8px;border-left:3px solid var(--line-strong)}
+.quiz-feedback.correct{border-color:var(--good);color:var(--good)}
+.quiz-feedback.incorrect{border-color:var(--bad);color:var(--bad)}
+.quiz-result{font-weight:600;font-size:18px}
+.quiz-notice{font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px}
+.copied{font-size:13px;color:var(--good)}
+footer{padding-block:28px;color:var(--muted);font-size:14px}
+@media (prefers-reduced-motion:no-preference){svg .anim{transition:all .2s}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">ADMS 3351 · PASS · Term Test I prep</div>
+  <h1>Harry's Midterm <span>Toolkit</span></h1>
+  <p class="lede">You get the formula sheet in the test. What you need is to know which formula answers which question, and what the number means. Change any input below and watch the answer and the picture move.</p>
+  <div class="chips">
+    <span class="chip hot">Sun Oct 18 · 10:00–12:00</span>
+    <span class="chip">Chapters 1, 2, 5, 6</span>
+    <span class="chip">Formula sheet provided</span>
+    <span class="chip">Bring a non-programmable calculator</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <div class="row">
+    <a href="adms-3351-quiz.html"><b>★</b>Practice quiz</a>
+    <a href="adms-3351-chapter-1.html"><b>Ch1</b>Operations ratios</a>
+    <a href="adms-3351-chapter-2.html"><b>Ch2</b>Productivity</a>
+    <a href="adms-3351-chapter-5-pert.html"><b>Ch5</b>PERT estimates</a>
+    <a href="adms-3351-chapter-5-probability.html"><b>Ch5</b>Probability</a>
+    <a href="adms-3351-chapter-5-critical-path.html"><b>Ch5</b>Critical path</a>
+    <a href="adms-3351-chapter-5-crashing.html"><b>Ch5</b>Crashing</a>
+    <a href="adms-3351-chapter-6-littles-law.html"><b>Ch6</b>Little's law</a>
+    <a href="adms-3351-chapter-6-break-even.html"><b>Ch6</b>Break-even</a>
+    <a href="adms-3351-chapter-6-line-balancing.html"><b>Ch6</b>Line balancing</a>
+    <a href="adms-3351-study-with-ai.html" class="ai"><b>→</b>Study with AI</a>
+  </div>
+</nav>
+
+<section class="lab" id="quiz">
+  <div class="lab-head">
+    <div class="eyebrow">ADMS 3351 · Term Test I · Multiple choice</div>
+    <h2>Review-sheet quiz</h2>
+    <p class="q">Choose a chapter to open its questions, or start the full set.</p>
+  </div>
+  <div class="quiz-panel">
+    <div class="quiz-filters" role="group" aria-label="Choose quiz">
+      <button class="btn" type="button" data-quiz="all" aria-pressed="false">All 10</button>
+      <button class="btn" type="button" data-quiz="1" aria-pressed="false">Chapter 1</button>
+      <button class="btn" type="button" data-quiz="2" aria-pressed="false">Chapter 2</button>
+      <button class="btn" type="button" data-quiz="5" aria-pressed="false">Chapter 5</button>
+      <button class="btn" type="button" data-quiz="6" aria-pressed="false">Chapter 6</button>
+    </div>
+    <div class="quiz-notice">Progress is saved only in this browser on this device. It is not sent to PASS or linked to a student number yet. Central reporting will use the approved York Microsoft Form once its response link is connected.</div>
+    <div id="quiz-questions"></div>
+    <div class="row" id="quiz-actions" hidden>
+      <button class="btn primary" id="quiz-submit" type="button">Check answers</button>
+      <button class="btn" id="quiz-reset" type="button">Reset local progress</button>
+      <span id="quiz-progress" class="eyebrow" aria-live="polite"></span>
+    </div>
+    <div id="quiz-result" class="quiz-result" aria-live="polite"></div>
+    <p class="quiz-notice" id="quiz-history"></p>
+  </div>
+</section>
+
+<!-- CH 1 RATIOS -->
+<section class="lab" id="ratios">
+  <div class="lab-head">
+    <div class="eyebrow">Chapter 1 · Operations efficiency</div>
+    <h2>Operations ratios and the cash conversion cycle</h2>
+    <p class="q">How many days is the company's cash tied up between paying for materials and collecting from customers?</p>
+    <a class="btn quiz-launch" href="adms-3351-quiz.html#ch1">Take Chapter 1 quiz</a>
+  </div>
+  <div class="grid">
+    <div class="explain">
+      <div class="eqs">
+        <div class="eq"><span class="k">Profit margin</span> = Net income ÷ Sales</div>
+        <div class="eq"><span class="k">Asset turnover</span> = Sales ÷ Total assets</div>
+        <div class="eq"><span class="k">Receivables turnover</span> = Sales ÷ Avg receivables</div>
+        <div class="eq"><span class="k">Days sales outstanding</span> = 365 ÷ Receivables turnover</div>
+        <div class="eq"><span class="k">Inventory turnover</span> = COGS ÷ Avg inventory</div>
+        <div class="eq"><span class="k">Days of inventory</span> = 365 ÷ Inventory turnover</div>
+        <div class="eq"><span class="k">Cash conversion cycle</span> = Days of inventory + DSO − Payable period</div>
+      </div>
+      <p class="note"><b>Read it as a timeline.</b> Inventory sits for some days, then you wait for the customer to pay. Your supplier lets you pay late, which takes days off the front. What's left is how long your own cash is stuck.</p>
+      <div class="trap">Inventory turnover uses <b>cost of goods sold</b>, not sales. Receivables turnover uses <b>sales</b>. Swapping them is the most common mistake.</div>
+    </div>
+    <div class="bench">
+      <div class="eyebrow">Try it · example company</div>
+      <div class="fields">
+        <div class="field"><label for="r-sales">Annual sales ($)</label><input type="number" id="r-sales" value="2000000" step="10000"></div>
+        <div class="field"><label for="r-cogs">COGS ($)</label><input type="number" id="r-cogs" value="1200000" step="10000"></div>
+        <div class="field"><label for="r-ni">Net income ($)</label><input type="number" id="r-ni" value="150000" step="5000"></div>
+        <div class="field"><label for="r-ta">Total assets ($)</label><input type="number" id="r-ta" value="1500000" step="10000"></div>
+        <div class="field"><label for="r-ar">Avg receivables ($)</label><input type="number" id="r-ar" value="250000" step="5000"></div>
+        <div class="field"><label for="r-inv">Avg inventory ($)</label><input type="number" id="r-inv" value="300000" step="5000"></div>
+        <div class="field"><label for="r-pay">Payable period (days)</label><input type="number" id="r-pay" value="30" step="1"></div>
+      </div>
+      <div class="viz"><svg id="r-svg" viewBox="0 0 640 200" role="img" aria-label="Cash conversion cycle timeline"></svg></div>
+      <div class="out" id="r-out"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CH 2 PRODUCTIVITY -->
+<section class="lab" id="productivity">
+  <div class="lab-head">
+    <div class="eyebrow">Chapter 2 · Strategy</div>
+    <h2>Productivity: partial, multifactor, total</h2>
+    <p class="q">How much output do we get for each dollar of input, and did it get better or worse this year?</p>
+    <a class="btn quiz-launch" href="adms-3351-quiz.html#ch2">Take Chapter 2 quiz</a>
+  </div>
+  <div class="grid">
+    <div class="explain">
+      <div class="eqs">
+        <div class="eq"><span class="k">Productivity</span> = Output ÷ Input</div>
+        <div class="eq"><span class="k">Partial</span> = Output ÷ one input (e.g. Labour)</div>
+        <div class="eq"><span class="k">Multifactor</span> = Output ÷ (two or more inputs)</div>
+        <div class="eq"><span class="k">Total</span> = Output ÷ All inputs</div>
+        <div class="eq"><span class="k">% change</span> = (This year − Last year) ÷ Last year</div>
+      </div>
+      <p class="note"><b>The name depends only on the denominator.</b> One input is partial, some inputs is multifactor, every input is total. Tick inputs on the right and watch the label change.</p>
+      <div class="trap">Labour productivity can go up while total productivity goes down. That happens when another input, often materials, grew faster than output. Exams love asking you to explain it.</div>
+    </div>
+    <div class="bench">
+      <div class="eyebrow">Try it · two years of data ($)</div>
+      <div class="tbl"><table class="t" id="p-tbl">
+        <thead><tr><th>Item</th><th>Last year</th><th>This year</th><th>Use?</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <div class="row">
+        <span class="seg" role="group" aria-label="Presets">
+          <button type="button" data-pre="lab">Labour only</button>
+          <button type="button" data-pre="lce">Labour + capital + energy</button>
+          <button type="button" data-pre="all">All inputs</button>
+        </span>
+      </div>
+      <div class="viz"><svg id="p-svg" viewBox="0 0 640 130" role="img" aria-label="Productivity comparison"></svg></div>
+      <div class="out" id="p-out"></div>
+      <p class="say" id="p-say"></p>
+    </div>
+  </div>
+</section>
+
+<!-- CH 5 PERT -->
+<section class="lab" id="pert">
+  <div class="lab-head">
+    <div class="eyebrow">Chapter 5 · Projects</div>
+    <h2>PERT three-time estimates</h2>
+    <a class="btn quiz-launch" href="adms-3351-quiz.html#ch5">Take Chapter 5 quiz</a>
+    <p class="q">When an activity's time is uncertain, what time do we plan for, and how uncertain is it?</p>
+  </div>
+  <div class="grid">
+    <div class="explain">
+      <div class="eqs">
+        <div class="eq"><span class="k">Expected time</span>  ET = (a + 4m + b) ÷ 6</div>
+        <div class="eq"><span class="k">Variance</span>  σ² = ((b − a) ÷ 6)²</div>
+      </div>
+      <p class="note"><b>a</b> = optimistic, <b>m</b> = most likely, <b>b</b> = pessimistic. The most likely time gets 4 times the weight, so ET sits near m but gets pulled toward the long tail.</p>
+      <p class="note">Variance only cares about the <b>spread</b> between a and b. Move m and the variance doesn't change.</p>
+      <div class="trap">Expected time is <b>not</b> the simple average (a + m + b) ÷ 3. Divide by 6 after weighting m by 4.</div>
+    </div>
+    <div class="bench">
+      <div class="eyebrow">Try it · one activity (weeks)</div>
+      <div class="fields">
+        <div class="field"><label for="pe-a">Optimistic a: <b id="pe-a-v"></b></label><input type="range" id="pe-a" min="0" max="30" step="1" value="2"></div>
+        <div class="field"><label for="pe-m">Most likely m: <b id="pe-m-v"></b></label><input type="range" id="pe-m" min="0" max="30" step="1" value="4"></div>
+        <div class="field"><label for="pe-b">Pessimistic b: <b id="pe-b-v"></b></label><input type="range" id="pe-b" min="0" max="30" step="1" value="12"></div>
+      </div>
+      <div class="viz"><svg id="pe-svg" viewBox="0 0 640 190" role="img" aria-label="PERT time distribution"></svg></div>
+      <div class="out" id="pe-out"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CH 5 PROBABILITY -->
+<section class="lab" id="prob">
+  <div class="lab-head">
+    <div class="eyebrow">Chapter 5 · Projects</div>
+    <h2>Probability of finishing by a deadline</h2>
+    <a class="btn quiz-launch" href="adms-3351-quiz.html#ch5">Take Chapter 5 quiz</a>
+    <p class="q">What are the chances the project is done by week D? Or, flipped: what deadline can we promise with 95% confidence?</p>
+  </div>
+  <div class="grid">
+    <div class="explain">
+      <div class="eqs">
+        <div class="eq"><span class="k">Project ET</span> = Σ ET on the critical path</div>
+        <div class="eq"><span class="k">Project σ²</span> = Σ σ² on the critical path</div>
+        <div class="eq"><span class="k">Z</span> = (D − Project ET) ÷ √(Σ σ²)</div>
+        <div class="eq"><span class="k">Deadline</span>  D = Project ET + Z × √(Σ σ²)</div>
+      </div>
+      <p class="note"><b>Z counts standard deviations.</b> Look Z up in the normal table to get the probability. A deadline equal to ET gives Z = 0, which is only a 50% chance.</p>
+      <div class="trap">Add the <b>variances</b>, then take the square root. Adding standard deviations gives the wrong answer. Use only critical-path activities.</div>
+    </div>
+    <div class="bench">
+      <div class="row">
+        <span class="seg" role="group" aria-label="Mode">
+          <button type="button" id="pr-m1" aria-pressed="true">Find the probability</button>
+          <button type="button" id="pr-m2" aria-pressed="false">Find the deadline</button>
+        </span>
+      </div>
+      <div class="fields">
+        <div class="field"><label for="pr-te">Project ET (weeks)</label><input type="number" id="pr-te" value="22" step="0.5"></div>
+        <div class="field"><label for="pr-var">Σ variance (critical path)</label><input type="number" id="pr-var" value="4" step="0.25" min="0.01"></div>
+        <div class="field" id="pr-d-f"><label for="pr-d">Deadline D (weeks)</label><input type="number" id="pr-d" value="24" step="0.5"></div>
+        <div class="field" id="pr-p-f" hidden><label for="pr-p">Target probability (%)</label><input type="number" id="pr-p" value="95" step="1" min="1" max="99.9"></div>
+      </div>
+      <div class="viz"><svg id="pr-svg" viewBox="0 0 640 200" role="img" aria-label="Normal curve with shaded probability"></svg></div>
+      <div class="out" id="pr-out"></div>
+      <p class="say" id="pr-say"></p>
+    </div>
+  </div>
+</section>
+
+<!-- CH 5 CPM -->
+<section class="lab" id="cpm">
+  <div class="lab-head">
+    <div class="eyebrow">Chapter 5 · Projects</div>
+    <h2>Critical path: forward and backward pass</h2>
+    <a class="btn quiz-launch" href="adms-3351-quiz.html#ch5">Take Chapter 5 quiz</a>
+    <p class="q">What's the shortest time the project can take, and which activities can't slip at all?</p>
+  </div>
+  <div class="grid">
+    <div class="explain">
+      <div class="eqs">
+        <div class="eq"><span class="k">Forward</span>  ES = largest EF of predecessors;  EF = ES + t</div>
+        <div class="eq"><span class="k">Backward</span>  LF = smallest LS of successors;  LS = LF − t</div>
+        <div class="eq"><span class="k">Slack</span> = LS − ES = LF − EF</div>
+        <div class="eq"><span class="k">Critical path</span> = activities with slack 0 = the longest path</div>
+      </div>
+      <p class="note"><b>Forward pass, take the max</b>: you can't start until every predecessor is done. <b>Backward pass, take the min</b>: you must finish in time for the earliest successor.</p>
+      <p class="note">Each box shows <b>ES | EF</b> on top and <b>LS | LF</b> underneath. Change a duration and see whether the critical path moves.</p>
+      <div class="trap">At a merge (two arrows into one box), forward pass takes the <b>larger</b> EF. At a burst (one box feeding two), backward pass takes the <b>smaller</b> LS.</div>
+    </div>
+    <div class="bench">
+      <div class="eyebrow">Try it · durations in weeks</div>
+      <div class="fields" id="cpm-in"></div>
+      <div class="viz"><svg id="cpm-svg" viewBox="0 0 760 300" role="img" aria-label="Activity-on-node network"></svg></div>
+      <div class="out" id="cpm-out"></div>
+      <div class="tbl"><table class="t" id="cpm-paths"></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- CH 5 CRASHING -->
+<section class="lab" id="crash">
+  <div class="lab-head">
+    <div class="eyebrow">Chapter 5 · Projects</div>
+    <h2>Crashing: the time–cost trade-off</h2>
+    <a class="btn quiz-launch" href="adms-3351-quiz.html#ch5">Take Chapter 5 quiz</a>
+    <p class="q">Is it worth paying to finish early? Keep shortening while each week costs less than the overhead it saves.</p>
+  </div>
+  <div class="grid">
+    <div class="explain">
+      <div class="eqs">
+        <div class="eq"><span class="k">Crash cost / week</span> = (Crash cost − Normal cost) ÷ (Normal time − Crash time)</div>
+        <div class="eq"><span class="k">Total cost</span> = Direct (activity) cost + Indirect (overhead) cost</div>
+      </div>
+      <p class="note"><b>The rule:</b> shorten one week at a time. Pick the <b>cheapest activity on the critical path</b>. Stop when the next week costs more than the overhead it saves.</p>
+      <p class="note">Each week costs more than the one before. You use up the cheap activities first, and once a second path becomes critical, you have to shorten both paths together.</p>
+      <div class="trap">The cheapest activity in the table is useless if it's <b>not on the critical path</b>. Shortening it doesn't make the project any shorter.</div>
+      <div class="bench">
+        <div class="eyebrow">Calculator · cost per week</div>
+        <div class="fields">
+          <div class="field"><label for="cc-nt">Normal time</label><input type="number" id="cc-nt" value="6"></div>
+          <div class="field"><label for="cc-ct">Crash time</label><input type="number" id="cc-ct" value="4"></div>
+          <div class="field"><label for="cc-nc">Normal cost ($)</label><input type="number" id="cc-nc" value="12000" step="500"></div>
+          <div class="field"><label for="cc-cc">Crash cost ($)</label><input type="number" id="cc-cc" value="15000" step="500"></div>
+        </div>
+        <p class="eq" id="cc-out"></p>
+      </div>
+    </div>
+    <div class="bench">
+      <div class="eyebrow">Try it · a 20-week project</div>
+      <div class="field"><label for="cr-oh">Overhead per week: <b id="cr-oh-v"></b></label><input type="range" id="cr-oh" min="500" max="4000" step="100" value="2000"></div>
+      <div class="legend"><span><i style="background:var(--steel)"></i>Direct cost</span><span><i style="background:var(--line-strong)"></i>Overhead</span><span><i style="background:var(--accent)"></i>Total cost</span></div>
+      <div class="viz"><svg id="cr-svg" viewBox="0 0 640 240" role="img" aria-label="Time-cost trade-off curves"></svg></div>
+      <div class="tbl"><table class="t" id="cr-tbl"></table></div>
+      <p class="say" id="cr-say"></p>
+    </div>
+  </div>
+</section>
+
+<!-- CH 6 LITTLE -->
+<section class="lab" id="little">
+  <div class="lab-head">
+    <div class="eyebrow">Chapter 6 · Manufacturing processes</div>
+    <h2>Little's law</h2>
+    <a class="btn quiz-launch" href="adms-3351-quiz.html#ch6">Take Chapter 6 quiz</a>
+    <p class="q">How much work is sitting in the process, how fast does it come out, and how long does each unit spend inside?</p>
+  </div>
+  <div class="grid">
+    <div class="explain">
+      <div class="eqs">
+        <div class="eq"><span class="k">Inventory</span> = Throughput rate × Flow time</div>
+        <div class="eq"><span class="k">Flow time</span> = Inventory ÷ Throughput rate</div>
+        <div class="eq"><span class="k">Throughput</span> = Inventory ÷ Flow time</div>
+      </div>
+      <p class="note"><b>Cover the one you want</b> in the triangle. What's left tells you to multiply (side by side) or divide (one over the other).</p>
+      <div class="trap">Units must match. If throughput is per <b>hour</b>, flow time must be in <b>hours</b>. Convert minutes before you plug in.</div>
+    </div>
+    <div class="bench">
+      <div class="row">
+        <span class="seg" role="group" aria-label="Solve for">
+          <button type="button" data-solve="I" aria-pressed="true">Find inventory</button>
+          <button type="button" data-solve="TH" aria-pressed="false">Find throughput</button>
+          <button type="button" data-solve="T" aria-pressed="false">Find flow time</button>
+        </span>
+      </div>
+      <div class="fields">
+        <div class="field"><label for="ll-i">Inventory (units in process)</label><input type="number" id="ll-i" value="300"></div>
+        <div class="field"><label for="ll-th">Throughput (units / hour)</label><input type="number" id="ll-th" value="120"></div>
+        <div class="field"><label for="ll-t">Flow time (hours)</label><input type="number" id="ll-t" value="2.5" step="0.1"></div>
+      </div>
+      <div class="viz"><svg id="ll-svg" viewBox="0 0 640 210" role="img" aria-label="Little's law triangle"></svg></div>
+      <p class="say" id="ll-say"></p>
+    </div>
+  </div>
+</section>
+
+<!-- CH 6 BREAK-EVEN -->
+<section class="lab" id="breakeven">
+  <div class="lab-head">
+    <div class="eyebrow">Chapter 6 · Manufacturing processes</div>
+    <h2>Break-even and choosing a process</h2>
+    <a class="btn quiz-launch" href="adms-3351-quiz.html#ch6">Take Chapter 6 quiz</a>
+    <p class="q">How many units before a process makes money, and at what volume does the expensive machine pay off?</p>
+  </div>
+  <div class="grid">
+    <div class="explain">
+      <div class="eqs">
+        <div class="eq"><span class="k">Break-even</span>  Q = Fixed cost ÷ (Price − Variable cost)</div>
+        <div class="eq"><span class="k">Indifference</span>  Q = (F₂ − F₁) ÷ (V₁ − V₂)</div>
+        <div class="eq"><span class="k">Profit</span> = (Price − V) × Q − F</div>
+      </div>
+      <p class="note"><b>Price − variable cost</b> is what each unit contributes toward fixed costs. Break-even is how many units it takes to cover them.</p>
+      <p class="note"><b>Indifference point:</b> below it, pick the low fixed-cost process. Above it, the high fixed-cost, low variable-cost process wins.</p>
+      <div class="trap">Price doesn't appear in the indifference formula. You're comparing the two cost lines with each other, not with revenue.</div>
+    </div>
+    <div class="bench">
+      <div class="eyebrow">Try it</div>
+      <div class="fields">
+        <div class="field"><label for="be-p">Price ($/unit)</label><input type="number" id="be-p" value="25"></div>
+        <div class="field"><label for="be-f1">Manual fixed ($/yr)</label><input type="number" id="be-f1" value="30000" step="1000"></div>
+        <div class="field"><label for="be-v1">Manual variable ($/unit)</label><input type="number" id="be-v1" value="15"></div>
+        <div class="field"><label for="be-f2">Automated fixed ($/yr)</label><input type="number" id="be-f2" value="90000" step="1000"></div>
+        <div class="field"><label for="be-v2">Automated variable ($/unit)</label><input type="number" id="be-v2" value="9"></div>
+      </div>
+      <div class="field"><label for="be-q">Expected volume: <b id="be-q-v"></b> units</label><input type="range" id="be-q" min="0" max="20000" step="250" value="8000"></div>
+      <div class="legend"><span><i style="background:var(--ink)"></i>Revenue</span><span><i style="background:var(--steel)"></i>Manual total cost</span><span><i style="background:var(--alt)"></i>Automated total cost</span></div>
+      <div class="viz"><svg id="be-svg" viewBox="0 0 640 260" role="img" aria-label="Break-even chart"></svg></div>
+      <div class="out" id="be-out"></div>
+      <p class="say" id="be-say"></p>
+    </div>
+  </div>
+</section>
+
+<!-- CH 6 LINE BALANCING -->
+<section class="lab" id="balance">
+  <div class="lab-head">
+    <div class="eyebrow">Chapter 6 · Manufacturing processes</div>
+    <h2>Assembly line balancing</h2>
+    <a class="btn quiz-launch" href="adms-3351-quiz.html#ch6">Take Chapter 6 quiz</a>
+    <p class="q">How fast must the line run to meet demand, how many stations do we need, and how much time is wasted?</p>
+  </div>
+  <div class="grid">
+    <div class="explain">
+      <div class="eqs">
+        <div class="eq"><span class="k">Cycle time</span>  C = Production time per day ÷ Required output per day</div>
+        <div class="eq"><span class="k">Min. stations</span>  Nₜ = Σ task times ÷ C  (round up)</div>
+        <div class="eq"><span class="k">Efficiency</span> = Σ task times ÷ (Actual stations Nₐ × C)</div>
+        <div class="eq"><span class="k">Idle time</span> = Nₐ × C − Σ task times  (per cycle)</div>
+      </div>
+      <p class="note"><b>C is the time limit for every station.</b> No station's total can go over the dashed line. The tallest bar is the bottleneck, and it sets how fast the line actually runs.</p>
+      <div class="trap">Convert the production time to the same unit as task times (usually <b>seconds</b>). Always <b>round Nₜ up</b>: 4.2 stations means 5.</div>
+    </div>
+    <div class="bench">
+      <div class="eyebrow">Try it · station loads in seconds</div>
+      <div class="fields">
+        <div class="field"><label for="lb-time">Production time (min/day)</label><input type="number" id="lb-time" value="420"></div>
+        <div class="field"><label for="lb-dem">Demand (units/day)</label><input type="number" id="lb-dem" value="500"></div>
+      </div>
+      <div class="fields" id="lb-st"></div>
+      <div class="row"><button type="button" class="btn" id="lb-add">Add station</button><button type="button" class="btn" id="lb-rem">Remove station</button></div>
+      <div class="viz"><svg id="lb-svg" viewBox="0 0 640 230" role="img" aria-label="Station loads against cycle time"></svg></div>
+      <div class="out" id="lb-out"></div>
+      <p class="say" id="lb-say"></p>
+    </div>
+  </div>
+</section>
+
+<!-- AI -->
+<section class="lab ai" id="ai">
+  <div class="lab-head">
+    <div class="eyebrow">Handout · Study with AI</div>
+    <h2>Make AI quiz you, not answer for you</h2>
+    <p class="q">A chatbot is a tireless study partner if you set it up right. The trick is the prompt. Every good study prompt has five parts.</p>
+  </div>
+  <div class="anat">
+    <div class="part c-role"><h3>Role</h3><p>Who it should act as. "A study coach for ADMS 3351."</p></div>
+    <div class="part c-src"><h3>Source</h3><p>What to use. Paste your slides so it tests what your prof teaches.</p></div>
+    <div class="part c-task"><h3>Task</h3><p>What to make. Flashcards, a quiz, a new problem, a check of your work.</p></div>
+    <div class="part c-fmt"><h3>Format</h3><p>How to deliver it. One question at a time, Quizlet format, no answers until asked.</p></div>
+    <div class="part c-rule"><h3>Rules</h3><p>Limits. Use course notation, say "not sure" instead of guessing.</p></div>
+  </div>
+
+  <div class="grid" style="margin-top:28px">
+    <div class="explain">
+      <h3 style="font-size:22px">Build your prompt</h3>
+      <div class="fields" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">
+        <div class="field"><label for="ai-ch">Chapter</label>
+          <select id="ai-ch">
+            <option value="1">Ch 1 · Intro to OSCM</option>
+            <option value="2">Ch 2 · Strategy &amp; sustainability</option>
+            <option value="5">Ch 5 · Projects</option>
+            <option value="6">Ch 6 · Manufacturing processes</option>
+            <option value="all">All four (mock test)</option>
+          </select></div>
+        <div class="field"><label for="ai-mode">What you want</label>
+          <select id="ai-mode">
+            <option value="flash">Flashcards for Quizlet</option>
+            <option value="quiz" selected>Multiple-choice quiz</option>
+            <option value="problem">New practice problems</option>
+            <option value="mistake">Find my mistake</option>
+            <option value="teach">Grade my explanation</option>
+          </select></div>
+        <div class="field" id="ai-n-f"><label for="ai-n">How many</label>
+          <select id="ai-n"><option>3</option><option>5</option><option selected>10</option><option>20</option></select></div>
+      </div>
+      <div class="check"><label><input type="checkbox" id="ai-src" checked> I'll paste my slides or notes</label></div>
+      <p class="note" id="ai-tip"></p>
+      <div class="row"><button type="button" class="btn primary" id="ai-copy">Copy prompt</button><span class="copied" id="ai-copied" aria-live="polite"></span></div>
+    </div>
+    <div class="bench">
+      <div class="eyebrow">Your prompt · colour-coded by part</div>
+      <div class="prompt" id="ai-out"></div>
+    </div>
+  </div>
+
+  <h3 style="font-size:22px;margin-block:36px 14px">Four rules</h3>
+  <div class="rules">
+    <div><h3>Paste your slides</h3><p>Without them, AI quizzes you on a generic textbook and gets terms that your prof defines differently.</p></div>
+    <div><h3>Answer before you look</h3><p>If AI solves it and you read along, it feels like learning but isn't. Make it ask, and you answer.</p></div>
+    <div><h3>Check every number</h3><p>AI slips on arithmetic, z-values and crash order. Run its numbers through the calculators on this page or your formula sheet.</p></div>
+    <div><h3>Study only</h3><p>Check the course outline's AI policy. Use AI to prepare, never on graded work unless it's allowed.</p></div>
+  </div>
+</section>
+
+<footer>Made for ADMS 3351 PASS sessions, Fall 2026. All numbers are examples. Change any input to try your own.</footer>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const num=id=>{const v=parseFloat($(id).value);return isFinite(v)?v:0};
+const f=(n,d=2)=>isFinite(n)?n.toLocaleString('en-CA',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const money=(n,d=0)=>isFinite(n)?(n<0?'−$':'$')+f(Math.abs(n),d):'—';
+const pct=(n,d=1)=>isFinite(n)?f(n*100,d)+'%':'—';
+function nice(x){if(!(x>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(x)));const m=x/e;return (m<=1?1:m<=2?2:m<=5?5:10)*e}
+function ticks(max,n=5){const s=nice(max/n);const out=[];for(let v=0;v<=max+1e-9;v+=s)out.push(+v.toFixed(6));return out}
+function outGrid(el,items){el.innerHTML=items.map(([k,v,hot])=>`<div class="${hot?'hot':''}"><span>${k}</span><strong>${v}</strong></div>`).join('')}
+function bind(ids,fn){ids.forEach(id=>$(id).addEventListener('input',fn))}
+const kfmt=v=>v>=1000?(v/1000)+'k':String(v);
+
+/* ---------- CH1 RATIOS ---------- */
+function ratios(){
+  const S=num('r-sales'),C=num('r-cogs'),NI=num('r-ni'),TA=num('r-ta'),AR=num('r-ar'),INV=num('r-inv'),P=num('r-pay');
+  const pm=NI/S,at=S/TA,rt=S/AR,dso=365/rt,it=C/INV,doi=365/it,ccc=doi+dso-P;
+  outGrid($('r-out'),[['Profit margin',pct(pm)],['Asset turnover',f(at)+'×'],['Return on assets',pct(pm*at)],['Receivables turnover',f(rt)+'×'],['Days sales outstanding',f(dso,1)+' d'],['Inventory turnover',f(it)+'×'],['Days of inventory',f(doi,1)+' d'],['Cash conversion cycle',f(ccc,1)+' days',true]]);
+  const L=118,R=24,W=640,end=Math.max(doi+dso,P,1)*1.04,x=d=>L+(W-L-R)*Math.max(0,d)/end;
+  let s='';
+  ticks(end,6).forEach(t=>{s+=`<line class="grid-l" x1="${x(t)}" x2="${x(t)}" y1="8" y2="162"/><text x="${x(t)}" y="178" text-anchor="middle">${t}</text>`});
+  s+=`<text x="${W-R}" y="196" text-anchor="end">days after buying materials</text>`;
+  const row=(y,label,a,b,cls,txt)=>`<text x="${L-8}" y="${y+15}" text-anchor="end" class="t-ink">${label}</text><rect class="${cls} anim" x="${x(a)}" y="${y}" width="${Math.max(1,x(b)-x(a))}" height="22" rx="2"/><text x="${x(a)+6}" y="${y+15}" class="${cls==='bar-steel'||cls==='bar-acc'?'':'t-ink'}" style="${cls==='bar-steel'||cls==='bar-acc'?'fill:var(--on-accent)':''}">${txt}</text>`;
+  s+=row(14,'Inventory',0,doi,'bar-steel',f(doi,1)+' d');
+  s+=row(48,'Receivables',doi,doi+dso,'bar-steel-soft',f(dso,1)+' d');
+  s+=row(82,'Pay supplier',0,P,'bar-muted',f(P,0)+' d');
+  const a=Math.min(P,doi+dso),b=Math.max(P,doi+dso);
+  s+=row(124,'Cash tied up',a,b,'bar-acc',(ccc<0?'−':'')+f(Math.abs(ccc),1)+' d');
+  $('r-svg').innerHTML=s;
+}
+bind(['r-sales','r-cogs','r-ni','r-ta','r-ar','r-inv','r-pay'],ratios);ratios();
+
+/* ---------- CH2 PRODUCTIVITY ---------- */
+const PROWS=[['out','Output (sales value)',500000,560000],['lab','Labour',120000,125000],['mat','Materials',150000,190000],['cap','Capital',60000,62000],['ene','Energy',20000,26000]];
+$('p-tbl').querySelector('tbody').innerHTML=PROWS.map(([k,n,a,b])=>`<tr><td>${n}</td><td><input type="number" id="p-${k}-0" value="${a}" step="1000" aria-label="${n} last year"></td><td><input type="number" id="p-${k}-1" value="${b}" step="1000" aria-label="${n} this year"></td><td>${k==='out'?'':`<input type="checkbox" id="p-use-${k}" aria-label="Use ${n}" ${k==='lab'?'checked':''}>`}</td></tr>`).join('');
+const INPUTS=PROWS.slice(1);
+function prod(){
+  const used=INPUTS.filter(([k])=>$('p-use-'+k).checked);
+  const name=used.length===0?'Pick at least one input':used.length===1?`Partial (${used[0][1].toLowerCase()})`:used.length===INPUTS.length?'Total productivity':'Multifactor ('+used.map(u=>u[1].toLowerCase()).join(' + ')+')';
+  const val=y=>num('p-out-'+y)/used.reduce((s,[k])=>s+num(`p-${k}-${y}`),0);
+  const v0=used.length?val(0):NaN,v1=used.length?val(1):NaN,ch=(v1-v0)/v0;
+  outGrid($('p-out'),[['Measure',name.split(' (')[0]],['Last year',f(v0,3)],['This year',f(v1,3)],['Change',(ch>0?'+':'')+pct(ch),true]]);
+  const og=num('p-out-1')/num('p-out-0')-1;
+  const faster=INPUTS.map(([k,n])=>[n,num(`p-${k}-1`)/num(`p-${k}-0`)-1]).filter(([,g])=>g>og);
+  $('p-say').innerHTML=`<b>${name}.</b> Output grew ${pct(og)}. `+(faster.length?`Inputs that grew faster than output: ${faster.map(([n,g])=>`${n.toLowerCase()} (+${pct(g)})`).join(', ')}. Any measure that includes them will fall.`:'Every input grew slower than output, so every measure improves.');
+  const mx=Math.max(v0||0,v1||0,0.0001)*1.15,L=96,W=640,x=v=>L+(W-L-60)*v/mx;
+  let s='';
+  [['Last year',v0,'bar-muted',18],['This year',v1,ch>=0?'bar-steel':'bar-acc',66]].forEach(([lab,v,c,y])=>{
+    s+=`<text x="${L-8}" y="${y+21}" text-anchor="end" class="t-ink">${lab}</text><rect class="${c} anim" x="${L}" y="${y}" width="${isFinite(v)?Math.max(1,x(v)-L):0}" height="32" rx="2"/><text x="${isFinite(v)?x(v)+8:L+8}" y="${y+21}" class="t-ink t-b">${f(v,3)}</text>`});
+  $('p-svg').innerHTML=s;
+  document.querySelectorAll('[data-pre]').forEach(b=>b.setAttribute('aria-pressed','false'));
+}
+document.querySelectorAll('[data-pre]').forEach(b=>b.addEventListener('click',()=>{
+  const set={lab:['lab'],lce:['lab','cap','ene'],all:['lab','mat','cap','ene']}[b.dataset.pre];
+  INPUTS.forEach(([k])=>$('p-use-'+k).checked=set.includes(k));prod();b.setAttribute('aria-pressed','true')}));
+$('p-tbl').addEventListener('input',prod);$('p-tbl').addEventListener('change',prod);prod();
+
+/* ---------- CH5 PERT ---------- */
+function pert(src){
+  let a=num('pe-a'),m=num('pe-m'),b=num('pe-b');
+  if(src==='pe-a'){if(m<a)m=a;if(b<m)b=m}
+  else if(src==='pe-b'){if(m>b)m=b;if(a>m)a=m}
+  else{if(a>m)a=m;if(b<m)b=m}
+  $('pe-a').value=a;$('pe-m').value=m;$('pe-b').value=b;
+  $('pe-a-v').textContent=a;$('pe-m-v').textContent=m;$('pe-b-v').textContent=b;
+  const et=(a+4*m+b)/6,sd=(b-a)/6;
+  outGrid($('pe-out'),[['Simple average (wrong)',f((a+m+b)/3,2)],['Expected time ET',f(et,2)+' wk',true],['Std deviation σ',f(sd,3)],['Variance σ²',f(sd*sd,3),true]]);
+  const L=30,R=20,W=640,base=150,top=20,x=v=>L+(W-L-R)*v/30;
+  let s='';
+  for(let t=0;t<=30;t+=5)s+=`<line class="grid-l" x1="${x(t)}" x2="${x(t)}" y1="${top}" y2="${base}"/><text x="${x(t)}" y="${base+16}" text-anchor="middle">${t}</text>`;
+  s+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/><text x="${W-R}" y="${base+34}" text-anchor="end">weeks</text>`;
+  if(b>a){
+    const al=1+4*(m-a)/(b-a),be=1+4*(b-m)/(b-a),pts=[];let mx=0;
+    for(let i=0;i<=100;i++){const u=i/100;const d=Math.pow(Math.max(u,1e-6),al-1)*Math.pow(Math.max(1-u,1e-6),be-1);pts.push([a+u*(b-a),d]);if(d>mx)mx=d}
+    const y=d=>base-(base-top-14)*d/mx;
+    s+=`<path class="area-steel" d="M${x(a)},${base} ${pts.map(([v,d])=>`L${x(v)},${y(d)}`).join(' ')} L${x(b)},${base} Z"/>`;
+    s+=`<path class="ln ln-steel" d="${pts.map(([v,d],i)=>`${i?'L':'M'}${x(v)},${y(d)}`).join(' ')}"/>`;
+  } else s+=`<line class="ln ln-steel" x1="${x(a)}" x2="${x(a)}" y1="${base}" y2="${top+14}"/>`;
+  [['a',a],['m',m],['b',b]].forEach(([n,v])=>{s+=`<circle class="dot-steel" cx="${x(v)}" cy="${base}" r="4"/><text x="${x(v)}" y="${base-8}" text-anchor="middle" class="t-steel t-b">${n}</text>`});
+  s+=`<line class="ln ln-acc dash" x1="${x(et)}" x2="${x(et)}" y1="${top-4}" y2="${base}"/><text x="${x(et)+6}" y="${top+8}" class="t-acc t-b">ET = ${f(et,2)}</text>`;
+  $('pe-svg').innerHTML=s;
+}
+['pe-a','pe-m','pe-b'].forEach(id=>$(id).addEventListener('input',()=>pert(id)));pert();
+
+/* ---------- CH5 PROBABILITY ---------- */
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x))}
+const Phi=z=>0.5*(1+erf(z/Math.SQRT2));
+function invPhi(p){let lo=-8,hi=8;for(let i=0;i<90;i++){const m=(lo+hi)/2;Phi(m)<p?lo=m:hi=m}return (lo+hi)/2}
+let prMode=1;
+function prob(){
+  const te=num('pr-te'),v=Math.max(num('pr-var'),1e-6),sd=Math.sqrt(v);
+  let D,z,P;
+  if(prMode===1){D=num('pr-d');z=(D-te)/sd;z=Math.round(z*100)/100;P=Phi(z)}
+  else{P=Math.min(Math.max(num('pr-p')/100,0.001),0.999);z=invPhi(P);z=Math.round(z*100)/100;D=te+z*sd}
+  outGrid($('pr-out'),prMode===1?[['σ = √Σσ²',f(sd,3)],['Z',f(z,2),true],['Probability',pct(P,2),true]]:[['σ = √Σσ²',f(sd,3)],['Z for '+pct(P,0),f(z,2),true],['Deadline D',f(D,2)+' wk'],['Promise',Math.ceil(D-1e-9)+' weeks',true]]);
+  $('pr-say').innerHTML=prMode===1?`Z = (${f(D,1)} − ${f(te,1)}) ÷ ${f(sd,3)} = ${f(z,2)}. There's a <b>${pct(P,1)}</b> chance of finishing by week ${f(D,1)}.`:`D = ${f(te,1)} + ${f(z,2)} × ${f(sd,3)} = ${f(D,2)}. Round <b>up</b> to ${Math.ceil(D-1e-9)} weeks, because rounding down would drop below ${pct(P,0)}.`;
+  const L=20,R=20,W=640,base=160,top=24,lo=te-3.6*sd,hi=te+3.6*sd,x=t=>L+(W-L-R)*(t-lo)/(hi-lo),pdf=u=>Math.exp(-u*u/2),y=p=>base-(base-top)*p;
+  const pts=[];for(let i=0;i<=160;i++){const t=lo+(hi-lo)*i/160;pts.push([t,pdf((t-te)/sd)])}
+  const cut=Math.min(Math.max(D,lo),hi),sh=pts.filter(([t])=>t<=cut);
+  let s=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/>`;
+  s+=`<path class="area-acc" d="M${x(lo)},${base} ${sh.map(([t,p])=>`L${x(t)},${y(p)}`).join(' ')} L${x(cut)},${y(pdf((cut-te)/sd))} L${x(cut)},${base} Z"/>`;
+  s+=`<path class="ln ln-ink" d="${pts.map(([t,p],i)=>`${i?'L':'M'}${x(t)},${y(p)}`).join(' ')}"/>`;
+  for(let k=-3;k<=3;k++){const t=te+k*sd;s+=`<line class="ax" x1="${x(t)}" x2="${x(t)}" y1="${base}" y2="${base+5}"/><text x="${x(t)}" y="${base+18}" text-anchor="middle">${f(t,1)}</text><text x="${x(t)}" y="${base+32}" text-anchor="middle" style="font-size:10.5px">${k===0?'ET':(k>0?'+':'')+k+'σ'}</text>`}
+  s+=`<line class="ln ln-acc" x1="${x(cut)}" x2="${x(cut)}" y1="${top-10}" y2="${base}"/><text x="${x(cut)+(x(cut)>W-150?-6:6)}" y="${top}" text-anchor="${x(cut)>W-150?'end':'start'}" class="t-acc t-b">D = ${f(D,2)} · ${pct(P,1)}</text>`;
+  $('pr-svg').innerHTML=s;
+}
+function setPr(m){prMode=m;$('pr-m1').setAttribute('aria-pressed',m===1);$('pr-m2').setAttribute('aria-pressed',m===2);$('pr-d-f').hidden=m!==1;$('pr-p-f').hidden=m!==2;prob()}
+$('pr-m1').onclick=()=>setPr(1);$('pr-m2').onclick=()=>setPr(2);
+bind(['pr-te','pr-var','pr-d','pr-p'],prob);prob();
+
+/* ---------- CH5 CPM ---------- */
+const NET=[{id:'A',p:[],d:3,x:16,y:113},{id:'B',p:['A'],d:4,x:216,y:22},{id:'C',p:['A'],d:6,x:216,y:204},{id:'D',p:['B'],d:5,x:416,y:22},{id:'E',p:['B','C'],d:2,x:416,y:204},{id:'F',p:['D','E'],d:3,x:620,y:113}];
+const NW=124,NH=74;
+$('cpm-in').innerHTML=NET.map(n=>`<div class="field"><label for="cpm-${n.id}">${n.id} (after ${n.p.join(', ')||'start'})</label><input type="number" id="cpm-${n.id}" value="${n.d}" min="0" step="1"></div>`).join('');
+function cpm(){
+  const by={};NET.forEach(n=>{n.t=Math.max(0,num('cpm-'+n.id));by[n.id]=n});
+  NET.forEach(n=>{n.ES=Math.max(0,...n.p.map(p=>by[p].EF));n.EF=n.ES+n.t});
+  const T=Math.max(...NET.map(n=>n.EF));
+  [...NET].reverse().forEach(n=>{const succ=NET.filter(s=>s.p.includes(n.id));n.LF=succ.length?Math.min(...succ.map(s=>s.LS)):T;n.LS=n.LF-n.t;n.sl=n.LS-n.ES;n.crit=Math.abs(n.sl)<1e-9});
+  let s=`<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="arrow" d="M0,0 L10,5 L0,10 z"/></marker><marker id="ahc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="arrow crit" d="M0,0 L10,5 L0,10 z"/></marker></defs>`;
+  NET.forEach(n=>n.p.forEach(pid=>{const p=by[pid],c=p.crit&&n.crit&&Math.abs(p.EF-n.ES)<1e-9;
+    const x1=p.x+NW,y1=p.y+NH/2,x2=n.x-2,y2=n.y+NH/2,mx=(x1+x2)/2;
+    s+=`<path class="edge ${c?'crit':''}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}" marker-end="url(#${c?'ahc':'ah'})"/>`}));
+  NET.forEach(n=>{const cx=n.x+NW/2;
+    s+=`<rect class="node ${n.crit?'crit':''}" x="${n.x}" y="${n.y}" width="${NW}" height="${NH}" rx="4"/>`;
+    s+=`<line class="grid-l" x1="${n.x}" x2="${n.x+NW}" y1="${n.y+22}" y2="${n.y+22}"/><line class="grid-l" x1="${n.x}" x2="${n.x+NW}" y1="${n.y+52}" y2="${n.y+52}"/>`;
+    s+=`<text x="${n.x+8}" y="${n.y+16}">ES ${n.ES}</text><text x="${n.x+NW-8}" y="${n.y+16}" text-anchor="end">EF ${n.EF}</text>`;
+    s+=`<text x="${cx}" y="${n.y+43}" text-anchor="middle" class="${n.crit?'t-acc':'t-ink'} t-b" style="font-size:15px">${n.id} · ${n.t}</text>`;
+    s+=`<text x="${n.x+8}" y="${n.y+67}">LS ${n.LS}</text><text x="${n.x+NW-8}" y="${n.y+67}" text-anchor="end">LF ${n.LF}</text>`;
+    s+=`<text x="${cx}" y="${n.y+NH+15}" text-anchor="middle" class="${n.crit?'t-acc':''}">slack ${n.sl}</text>`;});
+  $('cpm-svg').innerHTML=s;
+  const paths=[];(function walk(id,acc){const nx=NET.filter(s=>s.p.includes(id));const a=[...acc,id];if(!nx.length)paths.push(a);else nx.forEach(n=>walk(n.id,a))})('A',[]);
+  const pl=paths.map(p=>[p,p.reduce((s,id)=>s+by[id].t,0)]);
+  $('cpm-paths').innerHTML=`<thead><tr><th>Path</th><th>Length</th><th></th></tr></thead><tbody>`+pl.map(([p,l])=>`<tr class="${l===T?'crit':''}"><td class="mono">${p.join('–')}</td><td>${l} wk</td><td>${l===T?'<span class="pill tie" style="color:var(--accent)">critical</span>':'slack '+(T-l)}</td></tr>`).join('')+'</tbody>';
+  outGrid($('cpm-out'),[['Project length',T+' weeks',true],['Critical path',pl.filter(([,l])=>l===T).map(([p])=>p.join('–')).join(' and '),true],['Activities with slack',NET.filter(n=>!n.crit).map(n=>`${n.id} (${n.sl})`).join(', ')||'none']]);
+}
+$('cpm-in').addEventListener('input',cpm);cpm();
+
+/* ---------- CH5 CRASHING ---------- */
+function ccalc(){const nt=num('cc-nt'),ct=num('cc-ct'),nc=num('cc-nc'),cc=num('cc-cc');const r=(cc-nc)/(nt-ct);
+  $('cc-out').innerHTML=`(${money(cc)} − ${money(nc)}) ÷ (${nt} − ${ct}) = <span class="k" style="color:var(--accent)">${nt>ct?money(r)+' per week':'crash time must be shorter'}</span>`}
+bind(['cc-nt','cc-ct','cc-nc','cc-cc'],ccalc);ccalc();
+const LAD=[{c:900,a:'C'},{c:1200,a:'A'},{c:1500,a:'B'},{c:2100,a:'D + F'},{c:2800,a:'B + F'},{c:3600,a:'G + H'}],N0=20,DIR0=60000;
+function crash(){
+  const oh=num('cr-oh');$('cr-oh-v').textContent=money(oh);
+  const rows=[];let cum=0;for(let k=0;k<=LAD.length;k++){if(k)cum+=LAD[k-1].c;const d=N0-k;rows.push({d,dir:DIR0+cum,ind:oh*d,tot:DIR0+cum+oh*d})}
+  let stop=LAD.findIndex(s=>s.c>=oh);if(stop<0)stop=LAD.length;const best=rows[stop];
+  $('cr-tbl').innerHTML=`<thead><tr><th>Week cut</th><th>Shorten</th><th>Costs</th><th>Saves</th><th>Total after</th><th>Decision</th></tr></thead><tbody>`+LAD.map((s,i)=>{const dec=s.c<oh?'<span class="pill go">crash</span>':s.c===oh?'<span class="pill tie">no gain</span>':'<span class="pill stop">stop</span>';return `<tr class="${i===stop-1?'crit':''}"><td>${N0-i} → ${N0-i-1}</td><td class="mono">${s.a}</td><td>${money(s.c)}</td><td>${money(oh)}</td><td>${money(rows[i+1].tot)}</td><td>${dec}</td></tr>`}).join('')+'</tbody>';
+  $('cr-say').innerHTML=`Best length: <b>${best.d} weeks</b> at a total cost of <b>${money(best.tot)}</b>, ${stop?`down from ${money(rows[0].tot)} at normal times.`:'so don\'t crash at all, because the first week already costs more than the overhead it saves.'}`;
+  const L=56,R=20,W=640,top=14,base=196,dmin=N0-LAD.length,x=d=>L+(W-L-R)*(d-dmin)/(N0-dmin);
+  const ymax=nice(Math.max(...rows.map(r=>r.tot))/4)*4.6,y=v=>base-(base-top)*v/ymax;
+  let s='';ticks(ymax,4).forEach(t=>{s+=`<line class="grid-l" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${kfmt(t)}</text>`});
+  rows.forEach(r=>{s+=`<text x="${x(r.d)}" y="${base+16}" text-anchor="middle">${r.d}</text>`});
+  s+=`<text x="${W-R}" y="${base+34}" text-anchor="end">project length (weeks)</text>`;
+  const line=(k,c)=>`<path class="ln ${c}" d="${rows.map((r,i)=>`${i?'L':'M'}${x(r.d)},${y(r[k])}`).join(' ')}"/>`;
+  s+=line('ind','ln-muted')+line('dir','ln-steel')+line('tot','ln-acc');
+  rows.forEach(r=>{s+=`<circle class="dot-acc" cx="${x(r.d)}" cy="${y(r.tot)}" r="3"/>`});
+  s+=`<circle cx="${x(best.d)}" cy="${y(best.tot)}" r="8" style="fill:none;stroke:var(--accent);stroke-width:2"/><text x="${x(best.d)}" y="${y(best.tot)-14}" text-anchor="middle" class="t-acc t-b">lowest total</text>`;
+  $('cr-svg').innerHTML=s;
+}
+$('cr-oh').addEventListener('input',crash);crash();
+
+/* ---------- CH6 LITTLE ---------- */
+let llSolve='I';
+function little(){
+  ['I','TH','T'].forEach(k=>{const el=$({I:'ll-i',TH:'ll-th',T:'ll-t'}[k]);el.readOnly=k===llSolve});
+  let I=num('ll-i'),TH=num('ll-th'),T=num('ll-t');
+  if(llSolve==='I'){I=TH*T;$('ll-i').value=+I.toFixed(3);$('ll-say').innerHTML=`Inventory = ${f(TH,1)} units/hr × ${f(T,2)} hr = <b>${f(I,1)} units</b> in the process on average.`}
+  if(llSolve==='TH'){TH=T?I/T:NaN;$('ll-th').value=isFinite(TH)?+TH.toFixed(3):'';$('ll-say').innerHTML=`Throughput = ${f(I,1)} units ÷ ${f(T,2)} hr = <b>${f(TH,1)} units per hour</b>.`}
+  if(llSolve==='T'){T=TH?I/TH:NaN;$('ll-t').value=isFinite(T)?+T.toFixed(3):'';$('ll-say').innerHTML=`Flow time = ${f(I,1)} units ÷ ${f(TH,1)} units/hr = <b>${f(T,2)} hours</b> (${f(T*60,0)} minutes) per unit.`}
+  const hot=k=>k===llSolve?'tri-hot':'';
+  let s=`<path class="tri" d="M320,12 L470,190 L170,190 Z"/><line class="ax" x1="232" x2="408" y1="104" y2="104" style="stroke:var(--ink);stroke-width:1.5"/><line class="ax" x1="320" x2="320" y1="104" y2="190" style="stroke:var(--ink);stroke-width:1.5"/>`;
+  if(llSolve==='I')s+=`<path class="tri tri-hot" d="M320,12 L408,104 L232,104 Z"/>`;
+  if(llSolve==='TH')s+=`<path class="tri tri-hot" d="M232,104 L320,104 L320,190 L170,190 Z"/>`;
+  if(llSolve==='T')s+=`<path class="tri tri-hot" d="M320,104 L408,104 L470,190 L320,190 Z"/>`;
+  s+=`<text x="320" y="84" text-anchor="middle" class="big ${llSolve==='I'?'t-acc':'t-ink'}">I</text><text x="262" y="164" text-anchor="middle" class="big ${llSolve==='TH'?'t-acc':'t-ink'}">TH</text><text x="372" y="164" text-anchor="middle" class="big ${llSolve==='T'?'t-acc':'t-ink'}">T</text><text x="320" y="152" text-anchor="middle" class="t-ink" style="font-size:16px">×</text>`;
+  s+=`<text x="40" y="60" class="t-ink t-b">I</text><text x="56" y="60">inventory = ${f(I,1)}</text><text x="40" y="84" class="t-ink t-b">TH</text><text x="66" y="84">throughput = ${f(TH,1)}/hr</text><text x="40" y="108" class="t-ink t-b">T</text><text x="56" y="108">flow time = ${f(T,2)} hr</text>`;
+  s+=`<text x="500" y="70" class="t-acc t-b">solving for ${llSolve}</text><text x="500" y="92">${llSolve==='I'?'TH × T':llSolve==='TH'?'I ÷ T':'I ÷ TH'}</text>`;
+  $('ll-svg').innerHTML=s;
+}
+document.querySelectorAll('[data-solve]').forEach(b=>b.addEventListener('click',()=>{llSolve=b.dataset.solve;document.querySelectorAll('[data-solve]').forEach(o=>o.setAttribute('aria-pressed',o===b));little()}));
+bind(['ll-i','ll-th','ll-t'],little);little();
+
+/* ---------- CH6 BREAK-EVEN ---------- */
+function breakeven(){
+  const P=num('be-p'),F1=num('be-f1'),V1=num('be-v1'),F2=num('be-f2'),V2=num('be-v2'),Q=num('be-q');$('be-q-v').textContent=f(Q,0);
+  const be1=P>V1?F1/(P-V1):NaN,be2=P>V2?F2/(P-V2):NaN,ind=V1!==V2?(F2-F1)/(V1-V2):NaN;
+  const pr1=(P-V1)*Q-F1,pr2=(P-V2)*Q-F2;
+  outGrid($('be-out'),[['Manual break-even',isFinite(be1)?f(be1,0)+' u':'never'],['Automated break-even',isFinite(be2)?f(be2,0)+' u':'never'],['Indifference point',isFinite(ind)&&ind>0?f(ind,0)+' u':'none',true],['Manual profit @ '+f(Q,0),money(pr1),pr1>=pr2],['Automated profit @ '+f(Q,0),money(pr2),pr2>pr1]]);
+  $('be-say').innerHTML=`At ${f(Q,0)} units, <b>${pr1>=pr2?'manual':'automated'}</b> earns more (${money(Math.max(pr1,pr2))} vs ${money(Math.min(pr1,pr2))}).`+(isFinite(ind)&&ind>0?` Below ${f(ind,0)} units choose ${F1<F2?'manual':'automated'}; above it choose ${F1<F2?'automated':'manual'}.`:'');
+  const L=60,R=20,W=640,top=14,base=220,xm=20000,x=q=>L+(W-L-R)*q/xm;
+  const ymax=nice(Math.max(P*xm,F1+V1*xm,F2+V2*xm)/4)*4.4,y=v=>base-(base-top)*Math.max(0,Math.min(v,ymax))/ymax;
+  let s='';ticks(ymax,4).forEach(t=>{s+=`<line class="grid-l" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${kfmt(t)}</text>`});
+  ticks(xm,4).forEach(t=>{s+=`<text x="${x(t)}" y="${base+16}" text-anchor="middle">${kfmt(t)}</text>`});
+  s+=`<text x="${W-R}" y="${base+34}" text-anchor="end">units per year</text>`;
+  s+=`<line class="ln ln-ink" x1="${x(0)}" y1="${y(0)}" x2="${x(xm)}" y2="${y(P*xm)}"/><line class="ln ln-steel" x1="${x(0)}" y1="${y(F1)}" x2="${x(xm)}" y2="${y(F1+V1*xm)}"/><line class="ln ln-alt" x1="${x(0)}" y1="${y(F2)}" x2="${x(xm)}" y2="${y(F2+V2*xm)}"/>`;
+  if(isFinite(be1)&&be1<=xm)s+=`<circle class="dot-steel" cx="${x(be1)}" cy="${y(P*be1)}" r="5"/><text x="${x(be1)-8}" y="${y(P*be1)-8}" text-anchor="end" class="t-steel t-b">BE ${f(be1,0)}</text>`;
+  if(isFinite(be2)&&be2<=xm)s+=`<circle class="dot-alt" cx="${x(be2)}" cy="${y(P*be2)}" r="5"/><text x="${x(be2)+8}" y="${y(P*be2)+16}" class="t-alt t-b">BE ${f(be2,0)}</text>`;
+  if(isFinite(ind)&&ind>0&&ind<=xm)s+=`<line class="ln ln-muted dash" x1="${x(ind)}" x2="${x(ind)}" y1="${top}" y2="${base}" style="stroke-width:1.5"/><circle class="dot-ink" cx="${x(ind)}" cy="${y(F1+V1*ind)}" r="5"/><text x="${x(ind)+8}" y="${y(F1+V1*ind)+18}" class="t-ink t-b">indifferent ${f(ind,0)}</text>`;
+  s+=`<line class="ln ln-acc" x1="${x(Q)}" x2="${x(Q)}" y1="${top}" y2="${base}" style="stroke-width:2"/><text x="${x(Q)+(x(Q)>W-120?-6:6)}" y="${top+10}" text-anchor="${x(Q)>W-120?'end':'start'}" class="t-acc t-b">Q = ${f(Q,0)}</text>`;
+  s+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/>`;
+  $('be-svg').innerHTML=s;
+}
+bind(['be-p','be-f1','be-v1','be-f2','be-v2','be-q'],breakeven);breakeven();
+
+/* ---------- CH6 LINE BALANCING ---------- */
+let loads=[48,45,50,42,40];
+function lbFields(){$('lb-st').innerHTML=loads.map((v,i)=>`<div class="field"><label for="lb-s${i}">Station ${i+1}</label><input type="number" id="lb-s${i}" value="${v}" min="0"></div>`).join('')}
+function balance(){
+  loads=loads.map((_,i)=>Math.max(0,num('lb-s'+i)));
+  const tm=num('lb-time'),dem=num('lb-dem'),C=tm*60/dem,sum=loads.reduce((a,b)=>a+b,0),Na=loads.length,Nt=Math.ceil(sum/C-1e-9),mx=Math.max(...loads),bi=loads.indexOf(mx),eff=sum/(Na*C),idle=Na*C-sum,outd=tm*60/mx;
+  outGrid($('lb-out'),[['Cycle time C',f(C,1)+' s',true],['Σ task times',f(sum,0)+' s'],['Min stations Nₜ',`${f(sum/C,2)} → ${Nt}`,true],['Actual stations Nₐ',Na],['Efficiency',pct(eff),true],['Idle time / cycle',f(idle,1)+' s'],['Bottleneck',`Station ${bi+1} (${mx} s)`],['Real output / day',f(outd,0)+' units']]);
+  const over=loads.map((v,i)=>[v,i]).filter(([v])=>v>C+1e-9);
+  $('lb-say').className='say'+(over.length?' bad':'');
+  $('lb-say').innerHTML=over.length?`Station ${over.map(([,i])=>i+1).join(', ')} goes over the cycle time. The line only makes ${f(outd,0)} units a day, short of the ${f(dem,0)} needed. Move a task or add a station.`:`Every station fits under ${f(C,1)} s. ${Na>Nt?`You're using ${Na} stations when the theoretical minimum is ${Nt}. See if tasks can be regrouped.`:'You hit the theoretical minimum number of stations.'}`;
+  const L=44,R=20,W=640,top=20,base=196,ymax=Math.max(C,mx)*1.18,y=v=>base-(base-top)*v/ymax,bw=(W-L-R)/Na;
+  let s='';ticks(ymax,4).forEach(t=>{s+=`<line class="grid-l" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end">${t}</text>`});
+  loads.forEach((v,i)=>{const bx=L+i*bw+bw*0.18,w=bw*0.64,c=v>C+1e-9?'bar-acc':i===bi?'bar-acc':'bar-steel';
+    s+=`<rect class="${c} anim" x="${bx}" y="${y(v)}" width="${w}" height="${base-y(v)}" rx="2"/><text x="${bx+w/2}" y="${y(v)-6}" text-anchor="middle" class="t-ink t-b">${v}</text><text x="${bx+w/2}" y="${base+16}" text-anchor="middle">S${i+1}${i===bi?' ◆':''}</text>`;
+    if(v<C)s+=`<rect x="${bx}" y="${y(C)}" width="${w}" height="${y(v)-y(C)}" style="fill:var(--line);opacity:.6"/>`});
+  s+=`<line class="ln ln-ink dash" x1="${L}" x2="${W-R}" y1="${y(C)}" y2="${y(C)}" style="stroke-width:1.8"/><text x="${W-R}" y="${y(C)-6}" text-anchor="end" class="t-ink t-b">C = ${f(C,1)} s</text>`;
+  s+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/>`;
+  $('lb-svg').innerHTML=s;
+}
+$('lb-st').addEventListener('input',balance);bind(['lb-time','lb-dem'],balance);
+$('lb-add').onclick=()=>{loads=loads.map((_,i)=>num('lb-s'+i));if(loads.length<9)loads.push(30);lbFields();balance()};
+$('lb-rem').onclick=()=>{loads=loads.map((_,i)=>num('lb-s'+i));if(loads.length>1)loads.pop();lbFields();balance()};
+lbFields();balance();
+
+/* ---------- REVIEW-SHEET MCQ QUIZZES ---------- */
+const REVIEW_QUESTIONS=[
+ {id:1,ch:'1',topic:'Efficiency and effectiveness',q:'A hospital cuts the cost per patient visit without changing which treatments it offers. This improves its:',opts:['effectiveness','efficiency','value','sustainability'],ans:1,why:'Efficiency is doing the same work with fewer resources or lower cost. The treatments offered have not changed.'},
+ {id:2,ch:'1',topic:'Goods–services continuum',q:'Which of the following sits closest to the pure service end of the goods–services continuum?',opts:['Automobile manufacturing','A restaurant','Financial advising','Food packaging'],ans:2,why:'Financial advising is primarily an intangible service with direct client interaction.'},
+ {id:3,ch:'2',topic:'Order winners and qualifiers',q:'For most customers, reliable on-time delivery is the minimum needed to even consider a supplier, but it does not win the sale. It is an:',opts:['order winner','order qualifier','core capability','operational trade-off'],ans:1,why:'An order qualifier is a minimum screening requirement; an order winner is what differentiates the supplier and wins the sale.'},
+ {id:4,ch:'2',topic:'Triple bottom line',q:'The triple bottom line evaluates a firm on all of the following except:',opts:['social','economic','environmental','technological'],ans:3,why:'The triple bottom line is people, planet and profit: social, environmental and economic performance.'},
+ {id:5,ch:'2',topic:'Productivity',q:'Output ÷ (Labour + Capital + Energy) is an example of a:',opts:['partial measure','multifactor measure','total measure','cash conversion measure'],ans:1,why:'It combines several input categories, but not all inputs, so it is multifactor productivity.'},
+ {id:6,ch:'5',topic:'Project structures',q:'Which project structure gives the project manager full authority but duplicates resources across projects?',opts:['Pure project','Functional project','Matrix project','Weak matrix'],ans:0,why:'A pure project has a dedicated, self-contained team and strong project-manager authority; this can duplicate resources across projects.'},
+ {id:7,ch:'5',topic:'Critical path and slack',q:'An activity has ES = 12, LS = 12, EF = 18 and LF = 18. Which statement is true?',opts:['It has 6 weeks of slack','It is on the critical path','It can be delayed without delaying the project','It should never be crashed'],ans:1,why:'Slack is LS − ES = 0 (also LF − EF = 0), so the activity is critical.'},
+ {id:8,ch:'5',topic:'Crashing',q:'When crashing a project, you should first shorten the activity that:',opts:['has the largest normal time','has the lowest crash cost per week on the critical path','has the most slack','has the lowest total crash cost in the whole project'],ans:1,why:'Only shortening a critical-path activity can shorten the project; among eligible activities, compare crash cost per time unit.'},
+ {id:9,ch:'6',topic:'Manufacturing process types',q:'A firm makes high volumes of one standardized product on a fixed sequence of workstations. Its process type is a(n):',opts:['project layout','workcenter (job shop)','manufacturing cell','assembly line'],ans:3,why:'An assembly line uses a fixed sequence of workstations for high-volume standardized output.'},
+ {id:10,ch:'6',topic:'Line bottleneck',q:"An assembly line's output rate is limited by:",opts:['the sum of all task times','the workstation with the longest time (the bottleneck)','the number of tasks','the shortest task time'],ans:1,why:'The bottleneck workstation has the longest workload and constrains the line’s throughput.'}
+];
+let quizChapter=location.hash.match(/^#ch([1256])$/)?.[1]||null;
+const quizStoreKey='adms3351-review-mcq-progress-v1';
+function quizHistory(){try{return JSON.parse(localStorage.getItem(quizStoreKey)||'{}')}catch(e){return {}}}
+function refreshQuizHistory(){
+ const h=quizHistory(),entries=Object.entries(h);$('quiz-history').textContent=entries.length?`Saved on this device: ${entries.map(([k,v])=>`${k==='all'?'All chapters':'Ch '+k}: best ${v.best}/${v.total} (${v.attempts} attempt${v.attempts===1?'':'s'})`).join(' · ')}.`:'No quiz scores saved on this device yet.';
+}
+function renderQuiz(){
+ const qs=quizChapter===null?[]:REVIEW_QUESTIONS.filter(q=>quizChapter==='all'||q.ch===quizChapter);
+ $('quiz-questions').innerHTML=qs.map(q=>`<article class="quiz-question" data-question="${q.id}"><h3>${q.id}. [Ch${q.ch} · ${q.topic}] ${q.q}</h3><div class="quiz-options">${q.opts.map((o,i)=>`<label class="quiz-option"><input type="radio" name="quiz-${q.id}" value="${i}"><span>${String.fromCharCode(97+i)}) ${o}</span></label>`).join('')}</div><div class="quiz-feedback" id="quiz-feedback-${q.id}" hidden></div></article>`).join('');
+ $('quiz-result').textContent='';$('quiz-progress').textContent=quizChapter===null?'Choose a chapter to begin.':`${qs.length} questions`;
+ $('quiz-actions').hidden=quizChapter===null;
+ document.querySelectorAll('[data-quiz]').forEach(b=>{const active=b.dataset.quiz===quizChapter;b.setAttribute('aria-pressed',String(active));b.classList.toggle('primary',active)});
+ refreshQuizHistory();
+}
+document.querySelectorAll('[data-quiz]').forEach(b=>b.addEventListener('click',()=>{quizChapter=b.dataset.quiz;renderQuiz()}));
+document.querySelectorAll('[data-quiz-link]').forEach(b=>b.addEventListener('click',()=>{quizChapter=b.dataset.quizLink;renderQuiz();location.hash='quiz'}));
+$('quiz-submit').addEventListener('click',()=>{
+ if(quizChapter===null)return;
+ const qs=REVIEW_QUESTIONS.filter(q=>quizChapter==='all'||q.ch===quizChapter);let correct=0,answered=0;
+ qs.forEach(q=>{const selected=document.querySelector(`input[name="quiz-${q.id}"]:checked`);const fb=$('quiz-feedback-'+q.id);fb.hidden=false;if(selected){answered++;const ok=Number(selected.value)===q.ans;if(ok)correct++;fb.className='quiz-feedback '+(ok?'correct':'incorrect');fb.textContent=(ok?'Correct. ':'Not quite. ')+q.why}else{fb.className='quiz-feedback incorrect';fb.textContent='Choose an answer. '+q.why}});
+ $('quiz-progress').textContent=`Answered ${answered}/${qs.length}`;$('quiz-result').textContent=`Score: ${correct}/${qs.length}`;
+ if(answered===qs.length){const h=quizHistory(),key=quizChapter,old=h[key]||{best:0,total:qs.length,attempts:0};h[key]={best:Math.max(old.best,correct),total:qs.length,attempts:old.attempts+1};localStorage.setItem(quizStoreKey,JSON.stringify(h));refreshQuizHistory();$('quiz-result').textContent=`Score: ${correct}/${qs.length} · saved on this device`;}
+});
+$('quiz-reset').addEventListener('click',()=>{localStorage.removeItem(quizStoreKey);renderQuiz()});
+renderQuiz();
+
+/* ---------- SECTION PAGE NAVIGATION ---------- */
+const PAGE_FILES={"quiz": "adms-3351-quiz.html", "ratios": "adms-3351-chapter-1.html", "productivity": "adms-3351-chapter-2.html", "pert": "adms-3351-chapter-5-pert.html", "prob": "adms-3351-chapter-5-probability.html", "cpm": "adms-3351-chapter-5-critical-path.html", "crash": "adms-3351-chapter-5-crashing.html", "little": "adms-3351-chapter-6-littles-law.html", "breakeven": "adms-3351-chapter-6-break-even.html", "balance": "adms-3351-chapter-6-line-balancing.html", "ai": "adms-3351-study-with-ai.html"};
+const pageSections=[...document.querySelectorAll('section.lab')];
+function showPage(){
+ const filename=location.pathname.split('/').pop();
+ const fileTarget=Object.entries(PAGE_FILES).find(([,name])=>name===filename)?.[0];
+ const target=decodeURIComponent(location.hash.slice(1))||fileTarget||'balance';
+ const active=pageSections.some(s=>s.id===target)?target:'quiz';
+ pageSections.forEach(s=>s.hidden=s.id!==active);
+ window.scrollTo({top:0,behavior:'auto'});
+}
+window.addEventListener('hashchange',showPage);
+showPage();
+
+/* ---------- AI PROMPT BUILDER ---------- */
+const TOPIC={
+  '1':'Chapter 1, Introduction to Operations and Supply Chain Management (efficiency vs effectiveness vs value, the goods–services continuum, supply chain processes, and operations ratios such as inventory turnover, days sales outstanding and the cash conversion cycle)',
+  '2':'Chapter 2, Strategy and Sustainability (order winners and order qualifiers, competitive dimensions, trade-offs and straddling, the triple bottom line, activity-system maps, and partial, multifactor and total productivity)',
+  '5':'Chapter 5, Projects (project structures, CPM with ES/EF/LS/LF and slack, the critical path, PERT three-time estimates and the probability of meeting a deadline, and crashing; earned value management is NOT tested)',
+  '6':'Chapter 6, Manufacturing Processes (process types from project to continuous flow, the product–process matrix, break-even analysis, Little\'s law, and assembly line balancing)',
+  'all':'Chapters 1, 2, 5 and 6 of my Operations Management course, mixed like a real midterm (earned value management is NOT tested)'};
+const MODE={
+  flash:{task:n=>`Make ${n} flashcards on ${T()}.`,fmt:'Put one card per line as: term [TAB] definition, so I can import it into Quizlet. Mix definitions, "which one is it?" distinctions, and what each formula is used for.',tip:'Paste the result into Quizlet → Create → Import. Quizlet\'s Learn and Test modes then quiz you for free.'},
+  quiz:{task:n=>`Quiz me on ${T()} with ${n} multiple-choice questions.`,fmt:'Ask ONE question at a time with options a–d, then stop and wait for my answer. After I answer, tell me if I\'m right and explain why each wrong option is wrong. At the end, give my score and list the topics I missed.',tip:'Best for Chapters 1 and 2, which are mostly multiple choice. Type your answer before you read the explanation.'},
+  problem:{task:n=>`Write ${n} new exam-style practice problem${n>1?'s':''} on ${T()}, with realistic numbers.`,fmt:'Show only the questions. Do NOT show any solution until I type "solution". Then solve it step by step and name each formula before you use it.',tip:'Best for Chapters 5 and 6. Check the AI\'s answer with the calculators on this page. If they disagree, find out who made the mistake.'},
+  mistake:{task:()=>`Check my work on a ${T(true)} problem I paste below.`,fmt:'Don\'t redo it for me. Point to the FIRST step where I went wrong and give me a hint so I can fix it myself. If everything is right, say so and give me one harder follow-up.',tip:'Paste the full question and every step of your work, not just the final answer.'},
+  teach:{task:()=>`I'll explain an idea from ${T()} in my own words. Grade my explanation out of 10.`,fmt:'List what\'s missing or wrong, then ask me one question that tests whether I really understand it.',tip:'Good the night before. If you can explain it without notes, you know it.'}};
+function T(short){const c=$('ai-ch').value;return short?(c==='all'?'midterm':'Chapter '+c):TOPIC[c]}
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+let promptText='';
+function ai(){
+  const m=MODE[$('ai-mode').value],n=+$('ai-n').value,src=$('ai-src').checked;
+  $('ai-n-f').hidden=['mistake','teach'].includes($('ai-mode').value);
+  const parts=[
+    ['Role','c-role','You are a study coach for ADMS 3351 Operations Management at York University. The textbook is Jacobs & Chase, Operations and Supply Chain Management: The Core.'],
+    ...(src?[['Source','c-src','Use ONLY the course material I paste at the end. If something isn\'t in it, tell me instead of guessing.']]:[]),
+    ['Task','c-task',m.task(n)],
+    ['Format','c-fmt',m.fmt],
+    ['Rules','c-rule','Use the same notation as my course formula sheet. If you\'re not sure about something, say so. Keep each reply short.']];
+  const tail=[];
+  if($('ai-mode').value==='mistake')tail.push('--- PASTE THE QUESTION AND YOUR WORK HERE ---');
+  if(src)tail.push('--- PASTE YOUR SLIDES OR NOTES HERE ---');
+  promptText=parts.map(p=>p[2]).join('\n\n')+(tail.length?'\n\n'+tail.join('\n\n'):'');
+  $('ai-out').innerHTML=parts.map(([l,c,t])=>`<div class="blk ${c}"><small>${l}</small>${esc(t)}</div>`).join('')+tail.map(t=>`<div class="blk c-rule"><small>You add</small>${esc(t)}</div>`).join('');
+  $('ai-tip').textContent=m.tip;$('ai-copied').textContent='';
+}
+['ai-ch','ai-mode','ai-n','ai-src'].forEach(id=>$(id).addEventListener('change',ai));ai();
+$('ai-copy').addEventListener('click',()=>{
+  const done=()=>{$('ai-copied').textContent='Copied. Paste it into Claude, ChatGPT or Copilot.'};
+  const fallback=()=>{const r=document.createRange();r.selectNodeContents($('ai-out'));const s=getSelection();s.removeAllRanges();s.addRange(r);$('ai-copied').textContent='Selected. Press Ctrl/Cmd + C to copy.'};
+  try{navigator.clipboard.writeText(promptText).then(done,fallback)}catch(e){fallback()}
+});
+})();
+</script>
